@@ -1,0 +1,7 @@
+{
+  "name": "terraswap-scripts",
+  "type": "module",
+  "dependencies": {
+    "xrpl": "^4.4.0"
+  }
+}
