@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { WalletConnector } from "./WalletConnector";
 import { useWalletManager } from "../hooks/useWalletManager";
 import { useWallet } from "./providers/WalletProvider";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 export function Header() {
   useWalletManager();
@@ -20,6 +22,11 @@ export function Header() {
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-3">
+          <Link href="/admin">
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+              Admin
+            </Button>
+          </Link>
           <Badge variant="outline" className="text-xs">
             Devnet
           </Badge>
