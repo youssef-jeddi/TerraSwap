@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useTerraSwapTransactions } from "../hooks/useTerraSwapTransactions";
 import { TERRASWAP_CONFIG } from "../lib/terraswap-config";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowDownUp } from "lucide-react";
 
 export function TradeForm({ zone }) {
   const { placeOffer } = useTerraSwapTransactions();
-  const [mode, setMode] = useState("sell"); // "sell" = sell stablecoin for XRP, "buy" = buy stablecoin with XRP
+  const [mode, setMode] = useState("sell");
   const [stablecoinAmount, setStablecoinAmount] = useState("");
   const [xrpAmount, setXrpAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,17 +27,12 @@ export function TradeForm({ zone }) {
     };
     const xrpDrops = (parseFloat(xrpAmount) * 1_000_000).toString();
 
-    // In OfferCreate:
-    // TakerPays = what you want to receive (what the taker pays you)
-    // TakerGets = what you're offering (what the taker gets from you)
     let takerPays, takerGets;
 
     if (mode === "sell") {
-      // Selling stablecoin for XRP: you offer stablecoin, you want XRP
       takerPays = xrpDrops;
       takerGets = iouAmount;
     } else {
-      // Buying stablecoin with XRP: you offer XRP, you want stablecoin
       takerPays = iouAmount;
       takerGets = xrpDrops;
     }
@@ -58,66 +51,89 @@ export function TradeForm({ zone }) {
     }
   };
 
+  const toggleMode = () => {
+    setMode((m) => (m === "sell" ? "buy" : "sell"));
+  };
+
+  const topLabel = mode === "sell" ? "You sell" : "You pay";
+  const bottomLabel = mode === "sell" ? "You receive" : "You buy";
+  const topCurrency = mode === "sell" ? zone.currency : "XRP";
+  const bottomCurrency = mode === "sell" ? "XRP" : zone.currency;
+  const topValue = mode === "sell" ? stablecoinAmount : xrpAmount;
+  const bottomValue = mode === "sell" ? xrpAmount : stablecoinAmount;
+  const setTopValue = (v) => (mode === "sell" ? setStablecoinAmount(v) : setXrpAmount(v));
+  const setBottomValue = (v) => (mode === "sell" ? setXrpAmount(v) : setStablecoinAmount(v));
+
+  const buttonLabel = isLoading
+    ? "Signing..."
+    : mode === "sell"
+    ? `Sell ${stablecoinAmount || "0"} ${zone.currency} for ${xrpAmount || "0"} XRP`
+    : `Buy ${stablecoinAmount || "0"} ${zone.currency} for ${xrpAmount || "0"} XRP`;
+
   return (
     <div>
-      {/* Mode Toggle */}
-      <div className="flex gap-2 mb-4">
-        <Button
-          type="button"
-          variant={mode === "sell" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setMode("sell")}
-        >
-          Sell {zone.currency}
-        </Button>
-        <Button
-          type="button"
-          variant={mode === "buy" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setMode("buy")}
-        >
-          Buy {zone.currency}
-        </Button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>
-              {mode === "sell" ? "Sell" : "Buy"} Amount ({zone.currency})
-            </Label>
-            <Input
-              type="number"
-              placeholder="0.00"
-              min="0"
-              step="any"
-              value={stablecoinAmount}
-              onChange={(e) => setStablecoinAmount(e.target.value)}
-              required
-            />
+      <form onSubmit={handleSubmit}>
+        {/* Top input — sell/pay */}
+        <div className="rounded-xl border border-border bg-secondary/50 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              {topLabel}
+            </span>
           </div>
-          <div className="space-y-2">
-            <Label>
-              {mode === "sell" ? "Receive" : "Pay"} Amount (XRP)
-            </Label>
-            <Input
+          <div className="flex items-center gap-3">
+            <input
               type="number"
-              placeholder="0.00"
+              placeholder="0"
               min="0"
               step="any"
-              value={xrpAmount}
-              onChange={(e) => setXrpAmount(e.target.value)}
+              value={topValue}
+              onChange={(e) => setTopValue(e.target.value)}
               required
+              className="flex-1 bg-transparent text-2xl font-semibold text-foreground placeholder:text-muted-foreground/40 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
+            <div className="flex items-center gap-2 rounded-full bg-white border border-border px-3 py-1.5 shadow-sm">
+              <span className="text-sm font-semibold">{topCurrency}</span>
+            </div>
           </div>
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading
-            ? "Signing..."
-            : mode === "sell"
-            ? `Sell ${stablecoinAmount || "0"} ${zone.currency} for ${xrpAmount || "0"} XRP`
-            : `Buy ${stablecoinAmount || "0"} ${zone.currency} for ${xrpAmount || "0"} XRP`}
+        {/* Swap button */}
+        <div className="flex justify-center -my-3 relative z-10">
+          <button
+            type="button"
+            onClick={toggleMode}
+            className="h-9 w-9 rounded-full border-2 border-border bg-white shadow-sm flex items-center justify-center hover:bg-secondary transition-colors duration-150"
+          >
+            <ArrowDownUp className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Bottom input — receive/buy */}
+        <div className="rounded-xl border border-border bg-secondary/50 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              {bottomLabel}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="number"
+              placeholder="0"
+              min="0"
+              step="any"
+              value={bottomValue}
+              onChange={(e) => setBottomValue(e.target.value)}
+              required
+              className="flex-1 bg-transparent text-2xl font-semibold text-foreground placeholder:text-muted-foreground/40 outline-none border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <div className="flex items-center gap-2 rounded-full bg-white border border-border px-3 py-1.5 shadow-sm">
+              <span className="text-sm font-semibold">{bottomCurrency}</span>
+            </div>
+          </div>
+        </div>
+
+        <Button type="submit" disabled={isLoading} className="w-full mt-4 h-12 text-sm font-semibold rounded-xl">
+          {buttonLabel}
         </Button>
       </form>
 

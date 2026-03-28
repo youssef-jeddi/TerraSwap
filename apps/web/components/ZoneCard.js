@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./ui/card";
+import { Card, CardContent, CardFooter } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Lock, CheckCircle2, Clock, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, Lock, ArrowRight } from "lucide-react";
 import { useTerraSwapTransactions } from "../hooks/useTerraSwapTransactions";
 
 export function ZoneCard({ zone, hasAccess, pendingCredential }) {
@@ -29,25 +29,20 @@ export function ZoneCard({ zone, hasAccess, pendingCredential }) {
   const isPending = !hasAccess && !!pendingCredential;
 
   return (
-    <Card
-      className={
-        hasAccess
-          ? "border-emerald-200 bg-emerald-50/50"
-          : isPending
-          ? "border-amber-200 bg-amber-50/50"
-          : "opacity-75"
-      }
-    >
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <span className="text-2xl">{zone.flag}</span>
-            {zone.name}
-          </CardTitle>
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{zone.flag}</span>
+            <div>
+              <h3 className="text-base font-semibold">{zone.name}</h3>
+              <p className="text-sm text-muted-foreground">{zone.currencyName}</p>
+            </div>
+          </div>
           {hasAccess && (
             <Badge variant="success">
               <CheckCircle2 className="h-3 w-3 mr-1" />
-              Access Granted
+              Verified
             </Badge>
           )}
           {isPending && (
@@ -63,24 +58,21 @@ export function ZoneCard({ zone, hasAccess, pendingCredential }) {
             </Badge>
           )}
         </div>
-        <CardDescription>{zone.description}</CardDescription>
-      </CardHeader>
 
-      <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2.5 pt-3 border-t border-border">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Currency</span>
-            <span className="font-medium">{zone.currency} ({zone.currencyName})</span>
+            <span className="font-medium">{zone.currency}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Required Credential</span>
-            <span className="font-mono text-xs">{zone.credentialType}</span>
+            <span className="text-muted-foreground">Credential</span>
+            <span className="font-medium">{zone.credentialType}</span>
           </div>
-
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
         </div>
+
+        {error && (
+          <p className="text-sm text-destructive mt-3">{error}</p>
+        )}
       </CardContent>
 
       <CardFooter>
@@ -104,7 +96,7 @@ export function ZoneCard({ zone, hasAccess, pendingCredential }) {
         )}
         {isLocked && (
           <p className="text-sm text-muted-foreground text-center w-full">
-            A <span className="font-medium">{zone.credentialType}</span> credential must be issued to your account by a KYC provider.
+            Requires <span className="font-medium">{zone.credentialType}</span> from a KYC provider
           </p>
         )}
       </CardFooter>

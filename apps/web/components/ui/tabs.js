@@ -42,7 +42,7 @@ const TabsList = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      "inline-flex items-center gap-1 border-b border-border pb-px",
       className
     )}
     {...props}
@@ -63,10 +63,10 @@ const TabsTrigger = React.forwardRef(({ className, value, ...props }, ref) => {
       data-state={isSelected ? "active" : "inactive"}
       onClick={() => context?.onValueChange(value)}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center whitespace-nowrap px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 -mb-px",
         isSelected
-          ? "bg-background text-foreground shadow"
-          : "hover:bg-background/50 hover:text-foreground",
+          ? "border-b-2 border-primary text-foreground"
+          : "text-muted-foreground hover:text-foreground",
         className
       )}
       {...props}
@@ -87,7 +87,7 @@ const TabsContent = React.forwardRef(({ className, value, ...props }, ref) => {
       role="tabpanel"
       data-state={isSelected ? "active" : "inactive"}
       className={cn(
-        "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "mt-4 focus-visible:outline-none",
         className
       )}
       {...props}

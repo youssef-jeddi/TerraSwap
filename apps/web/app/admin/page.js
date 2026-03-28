@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Header } from "../../components/Header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -14,7 +13,6 @@ import { useXrplClient } from "../../components/providers/XrplClientProvider";
 import { useAdminTransactions } from "../../hooks/useAdminTransactions";
 import { TERRASWAP_CONFIG } from "../../lib/terraswap-config";
 import {
-  ArrowLeft,
   ShieldCheck,
   Coins,
   Users,
@@ -291,7 +289,7 @@ function CredentialHoldersTab() {
           <p className="text-sm text-muted-foreground">No credentials issued yet.</p>
         ) : (
           <div className="space-y-1">
-            <div className="grid grid-cols-4 gap-2 text-xs font-medium text-muted-foreground border-b pb-2">
+            <div className="grid grid-cols-4 gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground border-b border-border pb-2">
               <span>Subject</span>
               <span>Credential</span>
               <span>Status</span>
@@ -429,7 +427,7 @@ function CounterpartyOfferTab() {
                 type="button"
                 variant={side === "buy" ? "default" : "outline"}
                 size="sm"
-                className={side === "buy" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                className={side === "buy" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}
                 onClick={() => setSide("buy")}
               >
                 Buy {zone.currency}
@@ -438,7 +436,7 @@ function CounterpartyOfferTab() {
                 type="button"
                 variant={side === "sell" ? "default" : "outline"}
                 size="sm"
-                className={side === "sell" ? "bg-red-600 hover:bg-red-700" : ""}
+                className={side === "sell" ? "bg-red-600 hover:bg-red-700 text-white" : ""}
                 onClick={() => setSide("sell")}
               >
                 Sell {zone.currency}
@@ -508,17 +506,11 @@ export default function AdminPage() {
       <Header />
 
       <main className="flex-1">
-        <div className="container py-6">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4 -ml-2">
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Dashboard
-            </Button>
-          </Link>
-
-          <div className="mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">Admin Panel</h1>
+        <div className="container py-8">
+          <div className="mb-8">
+            <h1 className="text-xl font-semibold tracking-tight">Administration</h1>
             <p className="text-muted-foreground text-sm">
-              Manage credentials, stablecoins, and counterparty offers for the TerraSwap demo.
+              Manage credentials, stablecoins, and counterparty offers.
             </p>
           </div>
 
@@ -569,9 +561,9 @@ export default function AdminPage() {
         </div>
       </main>
 
-      <footer className="border-t py-6">
+      <footer className="border-t border-border py-8">
         <div className="container text-center text-sm text-muted-foreground">
-          Built with TerraSwap
+          TerraSwap — Institutional DeFi on XRPL
         </div>
       </footer>
     </div>

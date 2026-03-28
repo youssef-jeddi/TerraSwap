@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { useXrplClient } from "./providers/XrplClientProvider";
 import { useWallet } from "./providers/WalletProvider";
 import { useTerraSwap } from "./providers/TerraSwapProvider";
@@ -35,7 +34,6 @@ export function OrderBook({ zone }) {
 
     setIsLoading(true);
     try {
-      // Query account_offers from all known participants
       const accountsToQuery = [zone.counterparty];
       if (accountInfo?.address) {
         accountsToQuery.push(accountInfo.address);
@@ -60,7 +58,6 @@ export function OrderBook({ zone }) {
 
       const allOffers = results.flat();
 
-      // Filter offers that involve this zone's currency
       const zoneOffers = allOffers.filter((offer) => {
         const pays = offer.taker_pays;
         const gets = offer.taker_gets;
@@ -79,7 +76,6 @@ export function OrderBook({ zone }) {
         const gets = offer.taker_gets;
 
         if (isIou(gets) && gets.currency === zone.currency) {
-          // Maker is selling stablecoin (TakerGets = stablecoin)
           const stablecoinAmount = parseFloat(gets.value);
           const xrpAmount = isXrp(pays) ? formatXrp(pays) : 0;
           const price = stablecoinAmount > 0 ? (xrpAmount / stablecoinAmount).toFixed(4) : "0";
@@ -92,7 +88,6 @@ export function OrderBook({ zone }) {
             side: "sell",
           });
         } else if (isIou(pays) && pays.currency === zone.currency) {
-          // Maker is buying stablecoin (TakerPays = stablecoin)
           const stablecoinAmount = parseFloat(pays.value);
           const xrpAmount = isXrp(gets) ? formatXrp(gets) : 0;
           const price = stablecoinAmount > 0 ? (xrpAmount / stablecoinAmount).toFixed(4) : "0";
@@ -124,7 +119,6 @@ export function OrderBook({ zone }) {
     }
   }, [clientConnected, fetchOrderBook]);
 
-  // Refresh when user's offers change (placed/cancelled)
   useEffect(() => {
     if (clientConnected) {
       fetchOrderBook();
@@ -135,17 +129,33 @@ export function OrderBook({ zone }) {
   const { sells: sellOrders, buys: buyOrders } = allOrders;
   const totalOrders = sellOrders.length + buyOrders.length;
 
+  // Find the max amount for depth bar scaling
+  const allAmounts = [...sellOrders, ...buyOrders].map((o) => o.xrpAmount);
+  const maxAmount = Math.max(...allAmounts, 1);
+
+  const spread =
+    sellOrders.length > 0 && buyOrders.length > 0
+      ? (parseFloat(sellOrders[0].price) - parseFloat(buyOrders[0].price)).toFixed(4)
+      : null;
+
+  const midPrice =
+    sellOrders.length > 0 && buyOrders.length > 0
+      ? ((parseFloat(sellOrders[0].price) + parseFloat(buyOrders[0].price)) / 2).toFixed(4)
+      : sellOrders.length > 0
+      ? sellOrders[0].price
+      : buyOrders.length > 0
+      ? buyOrders[0].price
+      : null;
+
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-base">
-              Order Book — {zone.currency}/XRP
-            </CardTitle>
-            <CardDescription>
-              All open orders in the {zone.name}. {totalOrders} order{totalOrders !== 1 ? "s" : ""}.
-            </CardDescription>
+            <CardTitle className="text-base">Order Book</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {zone.currency}/XRP
+            </p>
           </div>
           <Button
             variant="ghost"
@@ -158,65 +168,93 @@ export function OrderBook({ zone }) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         {totalOrders === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No orders in this zone yet. Be the first to place one.
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            No orders in this zone yet.
           </p>
         ) : (
-          <div className="space-y-1">
-            {/* Header */}
-            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground border-b pb-2">
-              <span>Side</span>
-              <span className="text-right">Price (XRP)</span>
+          <div className="rounded-lg border border-border overflow-hidden">
+            {/* Column headers */}
+            <div className="grid grid-cols-4 gap-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground bg-secondary/60 px-3 py-2">
+              <span>Price (XRP)</span>
               <span className="text-right">{zone.currency}</span>
               <span className="text-right">XRP</span>
               <span className="text-right">Account</span>
             </div>
 
-            {/* Sell orders (red) */}
-            {sellOrders.map((order, i) => (
-              <div
-                key={`sell-${order.seq}-${i}`}
-                className="grid grid-cols-5 gap-2 items-center text-sm rounded-md px-2 py-1.5 bg-red-50 border border-red-100"
-              >
-                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 w-fit">
-                  SELL
-                </Badge>
-                <span className="text-right font-mono text-red-700">{order.price}</span>
-                <span className="text-right font-mono">{order.stablecoinAmount.toLocaleString()}</span>
-                <span className="text-right font-mono">{order.xrpAmount.toLocaleString()}</span>
-                <span className="text-right font-mono text-xs text-muted-foreground">
-                  {order.account === userAddress ? "(you)" : `${order.account.slice(0, 4)}...${order.account.slice(-4)}`}
-                </span>
-              </div>
-            ))}
+            {/* Sell side (asks) — shown in reverse so lowest ask is near the middle */}
+            <div className="divide-y divide-border/30">
+              {[...sellOrders].reverse().map((order, i) => {
+                const depthPct = (order.xrpAmount / maxAmount) * 100;
+                return (
+                  <div
+                    key={`sell-${order.seq}-${i}`}
+                    className="relative grid grid-cols-4 gap-0 items-center text-[13px] px-3 py-1.5"
+                  >
+                    {/* Depth bar */}
+                    <div
+                      className="absolute inset-y-0 right-0 bg-red-500/8"
+                      style={{ width: `${depthPct}%` }}
+                    />
+                    <span className="relative font-mono text-red-500 font-medium">{order.price}</span>
+                    <span className="relative text-right font-mono">{order.stablecoinAmount.toLocaleString()}</span>
+                    <span className="relative text-right font-mono text-muted-foreground">{order.xrpAmount.toLocaleString()}</span>
+                    <span className="relative text-right font-mono text-[11px] text-muted-foreground">
+                      {order.account === userAddress ? (
+                        <span className="text-primary font-medium">you</span>
+                      ) : (
+                        `${order.account.slice(0, 4)}...`
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
 
-            {/* Spread */}
-            {sellOrders.length > 0 && buyOrders.length > 0 && (
-              <div className="text-center text-xs text-muted-foreground py-1 border-y">
-                Spread:{" "}
-                {(parseFloat(sellOrders[0]?.price || 0) - parseFloat(buyOrders[0]?.price || 0)).toFixed(4)} XRP
-              </div>
-            )}
-
-            {/* Buy orders (green) */}
-            {buyOrders.map((order, i) => (
-              <div
-                key={`buy-${order.seq}-${i}`}
-                className="grid grid-cols-5 gap-2 items-center text-sm rounded-md px-2 py-1.5 bg-emerald-50 border border-emerald-100"
-              >
-                <Badge variant="success" className="text-[10px] px-1.5 py-0 w-fit">
-                  BUY
-                </Badge>
-                <span className="text-right font-mono text-emerald-700">{order.price}</span>
-                <span className="text-right font-mono">{order.stablecoinAmount.toLocaleString()}</span>
-                <span className="text-right font-mono">{order.xrpAmount.toLocaleString()}</span>
-                <span className="text-right font-mono text-xs text-muted-foreground">
-                  {order.account === userAddress ? "(you)" : `${order.account.slice(0, 4)}...${order.account.slice(-4)}`}
+            {/* Mid price / spread */}
+            <div className="flex items-center justify-center gap-3 py-2.5 px-3 bg-secondary/40 border-y border-border/50">
+              {midPrice && (
+                <span className="text-base font-semibold font-mono">{midPrice}</span>
+              )}
+              {spread && (
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Spread {spread}
                 </span>
-              </div>
-            ))}
+              )}
+              {!midPrice && (
+                <span className="text-xs text-muted-foreground">—</span>
+              )}
+            </div>
+
+            {/* Buy side (bids) */}
+            <div className="divide-y divide-border/30">
+              {buyOrders.map((order, i) => {
+                const depthPct = (order.xrpAmount / maxAmount) * 100;
+                return (
+                  <div
+                    key={`buy-${order.seq}-${i}`}
+                    className="relative grid grid-cols-4 gap-0 items-center text-[13px] px-3 py-1.5"
+                  >
+                    {/* Depth bar */}
+                    <div
+                      className="absolute inset-y-0 right-0 bg-emerald-500/8"
+                      style={{ width: `${depthPct}%` }}
+                    />
+                    <span className="relative font-mono text-emerald-600 font-medium">{order.price}</span>
+                    <span className="relative text-right font-mono">{order.stablecoinAmount.toLocaleString()}</span>
+                    <span className="relative text-right font-mono text-muted-foreground">{order.xrpAmount.toLocaleString()}</span>
+                    <span className="relative text-right font-mono text-[11px] text-muted-foreground">
+                      {order.account === userAddress ? (
+                        <span className="text-primary font-medium">you</span>
+                      ) : (
+                        `${order.account.slice(0, 4)}...`
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </CardContent>

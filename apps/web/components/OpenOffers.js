@@ -7,7 +7,6 @@ import { useTerraSwapTransactions } from "../hooks/useTerraSwapTransactions";
 
 function formatAmount(amount) {
   if (typeof amount === "string") {
-    // XRP in drops
     return `${(parseInt(amount) / 1_000_000).toLocaleString()} XRP`;
   }
   if (typeof amount === "object" && amount.value) {
@@ -33,7 +32,7 @@ export function OpenOffers({ zone, offers }) {
 
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader>
         <CardTitle className="text-base">Open Offers</CardTitle>
         <CardDescription>
           Your active orders in the {zone.name}.
@@ -43,11 +42,11 @@ export function OpenOffers({ zone, offers }) {
         {offers.length === 0 ? (
           <p className="text-sm text-muted-foreground">No open offers in this zone.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {offers.map((offer) => (
               <div
                 key={offer.seq}
-                className="flex items-center justify-between rounded-md border p-3"
+                className="flex items-center justify-between rounded-lg border border-border p-4"
               >
                 <div className="text-sm">
                   <span className="font-medium">Sell</span>{" "}
@@ -56,8 +55,9 @@ export function OpenOffers({ zone, offers }) {
                   <span className="font-medium">{formatAmount(offer.taker_pays)}</span>
                 </div>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-red-50"
                   onClick={() => handleCancel(offer.seq)}
                   disabled={cancellingSeq === offer.seq}
                 >
