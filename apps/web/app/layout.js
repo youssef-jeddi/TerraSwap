@@ -2,6 +2,8 @@
 
 import "./globals.css";
 import { WalletProvider } from "../components/providers/WalletProvider";
+import { XrplClientProvider } from "../components/providers/XrplClientProvider";
+import { TerraSwapProvider } from "../components/providers/TerraSwapProvider";
 
 export default function RootLayout({ children }) {
   return (
@@ -10,7 +12,11 @@ export default function RootLayout({ children }) {
         <title>TerraSwap</title>
       </head>
       <body className="bg-gray-50">
-        <WalletProvider>{children}</WalletProvider>
+        <WalletProvider>
+          <XrplClientProvider>
+            <TerraSwapProvider>{children}</TerraSwapProvider>
+          </XrplClientProvider>
+        </WalletProvider>
       </body>
     </html>
   );

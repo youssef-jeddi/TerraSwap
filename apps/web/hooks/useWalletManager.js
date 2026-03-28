@@ -41,7 +41,7 @@ export function useWalletManager() {
 
         const manager = new WalletManager({
           adapters,
-          network: "testnet",
+          network: "devnet",
           autoConnect: true,
           logger: { level: "info" },
         });
