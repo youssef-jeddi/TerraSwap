@@ -12,7 +12,7 @@ import { CheckCircle2, Clock, XCircle, RefreshCw } from "lucide-react";
 
 export default function Home() {
   const { isConnected, accountInfo } = useWallet();
-  const { credentials, pendingCredentials, zoneAccess, balances, trustLines, isLoading, refreshData } =
+  const { credentials, pendingCredentials, zoneAccess, xrpBalance, balances, trustLines, isLoading, refreshData } =
     useTerraSwap();
 
   const getCredentialStatus = (zone) => {
@@ -107,6 +107,10 @@ export default function Home() {
                           <span className="text-xs text-muted-foreground">Loading...</span>
                         ) : (
                           <>
+                            <span className="text-sm font-medium">
+                              {parseFloat(xrpBalance).toLocaleString()} XRP
+                            </span>
+                            <span className="text-muted-foreground">|</span>
                             <span className="text-sm font-medium">
                               {trustLines.CHF
                                 ? `${parseFloat(balances.CHF).toLocaleString()} CHF`

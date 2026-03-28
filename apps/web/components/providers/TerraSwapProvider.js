@@ -16,6 +16,7 @@ export function TerraSwapProvider({ children }) {
   const [credentials, setCredentials] = useState([]);
   const [pendingCredentials, setPendingCredentials] = useState([]);
   const [zoneAccess, setZoneAccess] = useState({ swiss: false, eu: false });
+  const [xrpBalance, setXrpBalance] = useState("0");
   const [balances, setBalances] = useState({ CHF: "0", EUR: "0" });
   const [trustLines, setTrustLines] = useState({ CHF: false, EUR: false });
   const [offers, setOffers] = useState([]);
@@ -79,6 +80,18 @@ export function TerraSwapProvider({ children }) {
   const fetchBalances = useCallback(async (client, userAddress) => {
     const newBalances = { CHF: "0", EUR: "0" };
     const newTrustLines = { CHF: false, EUR: false };
+
+    // Fetch XRP balance
+    try {
+      const info = await client.request({
+        command: "account_info",
+        account: userAddress,
+      });
+      const drops = info.result.account_data.Balance;
+      setXrpBalance((parseInt(drops) / 1_000_000).toString());
+    } catch (err) {
+      console.warn("Could not query XRP balance:", err.message);
+    }
 
     try {
       const lines = await client.request({
@@ -150,6 +163,7 @@ export function TerraSwapProvider({ children }) {
       setCredentials([]);
       setPendingCredentials([]);
       setZoneAccess({ swiss: false, eu: false });
+      setXrpBalance("0");
       setBalances({ CHF: "0", EUR: "0" });
       setTrustLines({ CHF: false, EUR: false });
       setOffers([]);
@@ -162,6 +176,7 @@ export function TerraSwapProvider({ children }) {
         credentials,
         pendingCredentials,
         zoneAccess,
+        xrpBalance,
         balances,
         trustLines,
         offers,

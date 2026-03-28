@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Header } from "../../../components/Header";
 import { TradeForm } from "../../../components/TradeForm";
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 export default function ZonePage({ params }) {
-  const { id } = use(params);
+  const { id } = params;
   const { isConnected } = useWallet();
   const {
     credentials,

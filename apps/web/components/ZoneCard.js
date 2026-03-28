@@ -95,9 +95,11 @@ export function ZoneCard({ zone, hasAccess, pendingCredential }) {
           </Button>
         )}
         {isLocked && (
-          <p className="text-sm text-muted-foreground text-center w-full">
-            Requires <span className="font-medium">{zone.credentialType}</span> from a KYC provider
-          </p>
+          <Link href="/credentials" className="w-full">
+            <Button variant="outline" className="w-full">
+              Request Verification
+            </Button>
+          </Link>
         )}
       </CardFooter>
     </Card>

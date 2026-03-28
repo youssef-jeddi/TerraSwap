@@ -21,7 +21,7 @@
     "react-dom": "^18.2.0",
     "stream-browserify": "^3.0.0",
     "tailwind-merge": "^3.4.0",
-    "xrpl": "^3.0.0",
+    "xrpl": "^4.6.0",
     "xrpl-connect": "^0.6.0"
   },
   "devDependencies": {

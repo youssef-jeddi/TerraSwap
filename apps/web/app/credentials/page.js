@@ -9,13 +9,15 @@ import { useWallet } from "../../components/providers/WalletProvider";
 import { useTerraSwap } from "../../components/providers/TerraSwapProvider";
 import { useTerraSwapTransactions } from "../../hooks/useTerraSwapTransactions";
 import { TERRASWAP_CONFIG } from "../../lib/terraswap-config";
+import { KYCVerificationForm } from "../../components/KYCVerificationForm";
 import { CheckCircle2, Clock, ShieldOff } from "lucide-react";
 
 export default function CredentialsPage() {
-  const { isConnected } = useWallet();
-  const { credentials, pendingCredentials, isLoading } = useTerraSwap();
+  const { isConnected, accountInfo } = useWallet();
+  const { credentials, pendingCredentials, isLoading, refreshData } = useTerraSwap();
   const { acceptCredential } = useTerraSwapTransactions();
   const [accepting, setAccepting] = useState(null);
+  const [verifyingZone, setVerifyingZone] = useState(null);
   const [error, setError] = useState(null);
 
   const handleAccept = async (credentialTypeHex) => {
@@ -136,10 +138,28 @@ export default function CredentialsPage() {
                             </Button>
                           )}
 
-                          {status === "none" && (
-                            <p className="text-sm text-muted-foreground mt-4">
-                              Request verification from a KYC provider to access the {zone.name}.
-                            </p>
+                          {status === "none" && verifyingZone !== zone.id && (
+                            <Button
+                              variant="outline"
+                              className="w-full mt-4"
+                              onClick={() => setVerifyingZone(zone.id)}
+                            >
+                              Request Verification
+                            </Button>
+                          )}
+
+                          {status === "none" && verifyingZone === zone.id && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <KYCVerificationForm
+                                zone={zone}
+                                walletAddress={accountInfo?.address}
+                                onSuccess={async () => {
+                                  setVerifyingZone(null);
+                                  await refreshData();
+                                }}
+                                onCancel={() => setVerifyingZone(null)}
+                              />
+                            </div>
                           )}
                         </div>
                       </div>
