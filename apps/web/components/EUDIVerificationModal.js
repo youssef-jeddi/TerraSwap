@@ -65,7 +65,8 @@ function StepIndicator({ currentStep }) {
 export function EUDIVerificationModal({ open, zone, walletAddress, onSuccess, onClose }) {
   const [step, setStep] = useState("idle"); // idle | loading | scanning | processing | complete | error
   const [sessionId, setSessionId] = useState(null);
-  const [verificationUri, setVerificationUrl] = useState(null);
+  const [verificationUrl, setVerificationUrl] = useState(null);
+  const [verificationUri, setVerificationUri] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const abortRef = useRef(null);
@@ -74,6 +75,7 @@ export function EUDIVerificationModal({ open, zone, walletAddress, onSuccess, on
     setStep("idle");
     setSessionId(null);
     setVerificationUrl(null);
+    setVerificationUri(null);
     setResult(null);
     setError(null);
     if (abortRef.current) {
@@ -111,7 +113,8 @@ export function EUDIVerificationModal({ open, zone, walletAddress, onSuccess, on
       }
 
       setSessionId(data.sessionId);
-      setVerificationUrl(data.verificationUri);
+      setVerificationUrl(data.verificationUrl);
+      setVerificationUri(data.verificationUri);
       setStep("scanning");
 
       // Immediately fire the blocking completeVerification call
@@ -167,7 +170,7 @@ export function EUDIVerificationModal({ open, zone, walletAddress, onSuccess, on
 
   if (!open) return null;
 
-  const isMockUrl = verificationUri?.startsWith("mock://");
+  const isMockUrl = verificationUrl?.startsWith("mock://");
 
   const currentStepIndex =
     step === "scanning" ? 0 :
@@ -243,7 +246,7 @@ export function EUDIVerificationModal({ open, zone, walletAddress, onSuccess, on
                 </div>
               ) : (
                 <QRCodeSVG
-                  value={verificationUri}
+                  value={verificationUrl}
                   size={192}
                   level="M"
                   includeMargin={false}

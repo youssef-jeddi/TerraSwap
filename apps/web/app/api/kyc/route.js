@@ -12,7 +12,7 @@ const MOCK_KYC = process.env.MOCK_KYC === "true";
 const ZONE_CONFIG = {
   swiss: {
     path: "ch",
-    claims: ["$.age_over_18", "$.given_name", "$.family_name", "$.issuing_country"],
+    claims: ["$.age_over_18", "$.given_name", "$.family_name"],
   },
   eu: {
     path: "eu",
@@ -46,6 +46,7 @@ export async function POST(request) {
           mockSessions.set(sessionId, { createdAt: Date.now(), zone });
           return NextResponse.json({
             sessionId,
+            verificationUrl: `mock://${sessionId}`,
             verificationUri: `mock://${sessionId}`,
           });
         }
@@ -64,6 +65,7 @@ export async function POST(request) {
         const data = await res.json();
         return NextResponse.json({
           sessionId: data.id,
+          verificationUrl: data.verificationUrl,
           verificationUri: data.verificationUri,
           zone,
         });
