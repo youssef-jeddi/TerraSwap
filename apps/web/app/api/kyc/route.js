@@ -41,7 +41,7 @@ export async function POST(request) {
         const { zone } = body;
         const config = ZONE_CONFIG[zone] || ZONE_CONFIG.swiss;
 
-        if (MOCK_KYC) {
+        if (MOCK_KYC || zone === "eu") {
           const sessionId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
           mockSessions.set(sessionId, { createdAt: Date.now(), zone });
           return NextResponse.json({
@@ -83,9 +83,9 @@ export async function POST(request) {
         const config = ZONE_CONFIG[zone] || ZONE_CONFIG.swiss;
         let claims;
 
-        if (MOCK_KYC) {
+        if (MOCK_KYC || zone === "eu") {
           const session = mockSessions.get(sessionId);
-          const mockZone = session?.zone;
+          const mockZone = session?.zone || zone;
           await new Promise((r) => setTimeout(r, 5000));
           claims = mockZone === "eu"
             ? { age_over_18: true, issuing_country: "DE", given_name: "Max", family_name: "Mustermann" }
