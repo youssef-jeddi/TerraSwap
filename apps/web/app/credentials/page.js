@@ -9,7 +9,7 @@ import { useWallet } from "../../components/providers/WalletProvider";
 import { useTerraSwap } from "../../components/providers/TerraSwapProvider";
 import { useTerraSwapTransactions } from "../../hooks/useTerraSwapTransactions";
 import { TERRASWAP_CONFIG } from "../../lib/terraswap-config";
-import { KYCVerificationForm } from "../../components/KYCVerificationForm";
+import { EUDIVerificationModal } from "../../components/EUDIVerificationModal";
 import { CheckCircle2, Clock, ShieldOff } from "lucide-react";
 
 export default function CredentialsPage() {
@@ -138,28 +138,14 @@ export default function CredentialsPage() {
                             </Button>
                           )}
 
-                          {status === "none" && verifyingZone !== zone.id && (
+                          {status === "none" && (
                             <Button
                               variant="outline"
                               className="w-full mt-4"
                               onClick={() => setVerifyingZone(zone.id)}
                             >
-                              Request Verification
+                              Verify with EUDI Wallet
                             </Button>
-                          )}
-
-                          {status === "none" && verifyingZone === zone.id && (
-                            <div className="mt-4 pt-4 border-t border-border">
-                              <KYCVerificationForm
-                                zone={zone}
-                                walletAddress={accountInfo?.address}
-                                onSuccess={async () => {
-                                  setVerifyingZone(null);
-                                  await refreshData();
-                                }}
-                                onCancel={() => setVerifyingZone(null)}
-                              />
-                            </div>
                           )}
                         </div>
                       </div>
@@ -175,6 +161,17 @@ export default function CredentialsPage() {
           )}
         </div>
       </main>
+
+      <EUDIVerificationModal
+        open={!!verifyingZone}
+        zone={verifyingZone}
+        walletAddress={accountInfo?.address}
+        onSuccess={async () => {
+          setVerifyingZone(null);
+          await refreshData();
+        }}
+        onClose={() => setVerifyingZone(null)}
+      />
 
       <footer className="border-t border-border py-8">
         <div className="container text-center text-sm text-muted-foreground">
